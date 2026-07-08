@@ -3,69 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的黑胶日记</title>
+    <title>Vinyl Diary</title>
     <style>
-        body { background: #000; color: #fff; margin: 0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .vinyl-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 90%; margin: 20px 0; }
-        .vinyl { width: 100%; aspect-ratio: 1; border-radius: 50%; background: #222; border: 5px solid #333; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; transition: transform 0.3s; }
-        .vinyl:hover { transform: scale(1.05); }
-        .vinyl img { width: 60%; height: 60%; border-radius: 50%; object-fit: cover; }
+        body { background: #000; color: #fff; margin: 0; padding: 20px; font-family: 'Helvetica Neue', sans-serif; }
+        h1 { text-align: center; letter-spacing: 2px; }
         
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
-        input, textarea { width: 90%; margin: 10px 0; padding: 15px; border-radius: 8px; border: none; }
-        button { background: #1DB954; color: #000; padding: 15px 30px; border: none; border-radius: 20px; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 500px; margin: 0 auto; }
+        
+        /* 黑胶唱片样式 */
+        .vinyl { width: 100%; aspect-ratio: 1; background: #1a1a1a; border-radius: 50%; border: 8px solid #333; 
+                 display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
+        .vinyl::after { content: ""; position: absolute; width: 20%; height: 20%; background: #000; border-radius: 50%; border: 2px solid #333; }
+        .vinyl img { width: 65%; height: 65%; border-radius: 50%; object-fit: cover; }
+        
+        .add-btn { position: fixed; bottom: 30px; right: 30px; background: #fff; color: #000; width: 60px; height: 60px; 
+                   border-radius: 50%; font-size: 30px; border: none; box-shadow: 0 4px 10px rgba(255,255,255,0.3); }
+
+        /* 弹窗样式 */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); flex-direction: column; 
+                 padding: 40px; justify-content: center; align-items: center; z-index: 10; }
+        input, textarea { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 12px; margin: 10px 0; border-radius: 8px; }
+        .close-btn { margin-top: 20px; padding: 10px 20px; background: #444; border: none; color: #fff; border-radius: 5px; }
     </style>
 </head>
 <body>
 
-    <h2 style="margin-top: 30px;">🎵 本月黑胶墙</h2>
-    <div class="vinyl-container" id="vinylWall"></div>
-    <button onclick="showInput()">+ 添加歌曲</button>
+    <h1>MY VINYL WALL</h1>
+    <div class="grid" id="wall"></div>
+    <button class="add-btn" onclick="document.getElementById('modal').style.display='flex'">+</button>
 
-    <!-- 弹窗：输入 -->
-    <div id="inputModal" class="modal">
-        <input type="text" id="songTitle" placeholder="歌曲名">
-        <input type="text" id="imgUrl" placeholder="封面图片链接">
-        <textarea id="myThought" placeholder="听歌感想..."></textarea>
-        <button onclick="saveEntry()">确认记录</button>
-    </div>
-
-    <!-- 弹窗：查看详情 -->
-    <div id="viewModal" class="modal" onclick="this.style.display='none'">
-        <h2 id="viewTitle"></h2>
-        <p id="viewThought" style="width: 80%"></p>
+    <!-- 添加界面 -->
+    <div id="modal" class="modal">
+        <input type="text" id="sName" placeholder="歌曲名">
+        <input type="file" id="sImg" accept="image/*">
+        <textarea id="sNote" placeholder="写下你的心情..."></textarea>
+        <button class="close-btn" onclick="save()">记录到黑胶墙</button>
     </div>
 
     <script>
-        let entries = JSON.parse(localStorage.getItem('myVinyls') || '[]');
-
+        let data = JSON.parse(localStorage.getItem('vinyls') || '[]');
+        
         function render() {
-            const wall = document.getElementById('vinylWall');
-            wall.innerHTML = entries.map((e, i) => `
-                <div class="vinyl" onclick="viewEntry(${i})">
-                    <img src="${e.img}" alt="封面">
+            const wall = document.getElementById('wall');
+            wall.innerHTML = data.map((item, i) => `
+                <div class="vinyl" onclick="alert('歌曲: ${item.name}\\n感想: ${item.note}')">
+                    <img src="${item.img}">
                 </div>
             `).join('');
         }
 
-        function saveEntry() {
-            entries.push({
-                title: document.getElementById('songTitle').value,
-                img: document.getElementById('imgUrl').value,
-                thought: document.getElementById('myThought').value
-            });
-            localStorage.setItem('myVinyls', JSON.stringify(entries));
-            document.getElementById('inputModal').style.display = 'none';
-            render();
+        function save() {
+            const file = document.getElementById('sImg').files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                data.push({ name: document.getElementById('sName').value, img: e.target.result, note: document.getElementById('sNote').value });
+                localStorage.setItem('vinyls', JSON.stringify(data));
+                document.getElementById('modal').style.display = 'none';
+                render();
+            };
+            reader.readAsDataURL(file);
         }
-
-        function viewEntry(i) {
-            document.getElementById('viewTitle').innerText = entries[i].title;
-            document.getElementById('viewThought').innerText = entries[i].thought;
-            document.getElementById('viewModal').style.display = 'flex';
-        }
-
-        function showInput() { document.getElementById('inputModal').style.display = 'flex'; }
         render();
     </script>
 </body>
