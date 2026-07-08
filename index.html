@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我的音乐心情日记</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background: #f4f7f6; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, textarea, select { width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+        button { background: #4CAF50; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; }
+        .entry { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .mood { font-weight: bold; color: #4CAF50; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>🎵 记录今日爱歌</h2>
+    <input type="text" id="songName" placeholder="歌曲名称">
+    <select id="mood">
+        <option>😊 开心</option>
+        <option>😌 平静</option>
+        <option>😔 忧郁</option>
+        <option>🔥 激动</option>
+    </select>
+    <textarea id="note" placeholder="写点关于这首歌的感想..."></textarea>
+    <button onclick="addEntry()">发布记录</button>
+</div>
+
+<div class="card" style="margin-top:20px;">
+    <h3>📜 我的音乐足迹</h3>
+    <div id="entriesList"></div>
+    <button onclick="generateMonthlySummary()" style="background:#2196F3">查看本月总结</button>
+</div>
+
+<script>
+    let logs = [];
+    function addEntry() {
+        const entry = {
+            song: document.getElementById('songName').value,
+            mood: document.getElementById('mood').value,
+            note: document.getElementById('note').value,
+            date: new Date().toLocaleDateString()
+        };
+        logs.push(entry);
+        render();
+    }
+
+    function render() {
+        const list = document.getElementById('entriesList');
+        list.innerHTML = logs.map(e => `
+            <div class="entry">
+                <p><strong>${e.song}</strong> - <span class="mood">${e.mood}</span></p>
+                <p>${e.note}</p>
+                <small>${e.date}</small>
+            </div>
+        `).join('');
+    }
+
+    function generateMonthlySummary() {
+        alert("本月你共记录了 " + logs.length + " 首歌！最常出现的心情是：" + (logs[0]?.mood || "暂无"));
+    }
+</script>
+</body>
+</html>
