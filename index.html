@@ -3,55 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vinyl Diary</title>
+    <title>我的音乐墙</title>
     <style>
-        body { background: #000; color: #fff; margin: 0; padding: 20px; font-family: 'Helvetica Neue', sans-serif; }
-        h1 { text-align: center; letter-spacing: 2px; }
+        body { background: #fff; margin: 0; padding: 10px; font-family: sans-serif; }
         
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 500px; margin: 0 auto; }
+        /* 核心调整：每行 4 个，看起来更紧凑，更有你照片里的感觉 */
+        .wall { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
         
-        /* 黑胶唱片样式 */
-        .vinyl { width: 100%; aspect-ratio: 1; background: #1a1a1a; border-radius: 50%; border: 8px solid #333; 
-                 display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
-        .vinyl::after { content: ""; position: absolute; width: 20%; height: 20%; background: #000; border-radius: 50%; border: 2px solid #333; }
-        .vinyl img { width: 65%; height: 65%; border-radius: 50%; object-fit: cover; }
+        .record { width: 100%; aspect-ratio: 1; cursor: pointer; background: #eee; overflow: hidden; }
+        .record img { width: 100%; height: 100%; object-fit: cover; }
         
-        .add-btn { position: fixed; bottom: 30px; right: 30px; background: #fff; color: #000; width: 60px; height: 60px; 
-                   border-radius: 50%; font-size: 30px; border: none; box-shadow: 0 4px 10px rgba(255,255,255,0.3); }
-
-        /* 弹窗样式 */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); flex-direction: column; 
-                 padding: 40px; justify-content: center; align-items: center; z-index: 10; }
-        input, textarea { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 12px; margin: 10px 0; border-radius: 8px; }
-        .close-btn { margin-top: 20px; padding: 10px 20px; background: #444; border: none; color: #fff; border-radius: 5px; }
+        .add-btn { position: fixed; bottom: 20px; right: 20px; background: #000; color: #fff; border-radius: 50%; width: 50px; height: 50px; border: none; font-size: 24px; }
+        
+        /* 简单的弹窗 */
+        #modal { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.95); flex-direction: column; padding: 20px; z-index: 10; }
     </style>
 </head>
 <body>
 
-    <h1>MY VINYL WALL</h1>
-    <div class="grid" id="wall"></div>
+    <div class="wall" id="wall"></div>
     <button class="add-btn" onclick="document.getElementById('modal').style.display='flex'">+</button>
 
-    <!-- 添加界面 -->
     <div id="modal" class="modal">
-        <input type="text" id="sName" placeholder="歌曲名">
+        <input type="text" id="sName" placeholder="歌名">
         <input type="file" id="sImg" accept="image/*">
-        <textarea id="sNote" placeholder="写下你的心情..."></textarea>
-        <button class="close-btn" onclick="save()">记录到黑胶墙</button>
+        <textarea id="sNote" placeholder="感想..."></textarea>
+        <button onclick="save()">保存</button>
     </div>
 
     <script>
         let data = JSON.parse(localStorage.getItem('vinyls') || '[]');
-        
         function render() {
-            const wall = document.getElementById('wall');
-            wall.innerHTML = data.map((item, i) => `
-                <div class="vinyl" onclick="alert('歌曲: ${item.name}\\n感想: ${item.note}')">
+            document.getElementById('wall').innerHTML = data.map((item, i) => `
+                <div class="record" onclick="alert('《${item.name}》\\n\\n${item.note}')">
                     <img src="${item.img}">
                 </div>
             `).join('');
         }
-
         function save() {
             const file = document.getElementById('sImg').files[0];
             const reader = new FileReader();
